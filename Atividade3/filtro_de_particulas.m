@@ -3,13 +3,13 @@ close all; clear;
 num_part_inicial = 500;
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://192.168.0.105:4950';
-laser = '/perception/laser/1/distances?range=-90:90:10';
+host = 'http://192.168.0.103:4950';
+laser = '/perception/laser/1/distances?range=-90:90:5';
 
 gr.name = 'group1';
 gr.resources{1} = '/motion/vel';
 gr.resources{2} = '/motion/pose';
-gr.resources{3} = '/perception/laser/1/distances?range=-90:90:10';
+gr.resources{3} = '/perception/laser/1/distances?range=-90:90:5';
 % dados do laser
 precisao = 50;  % mm
 passo = 1*pi/180;   % rad
@@ -23,9 +23,9 @@ variancia_final = 50;
 
 
 http_init('');
-http_delete('http://192.168.0.105:4950/group/group1');
-g1 = http_post('http://192.168.0.105:4950/group',gr);
-g1 = 'http://192.168.0.105:4950/group/group1';
+http_delete([host '/group/group1']);
+g1 = http_post([host '/group'],gr);
+g1 = [host '/group/group1'];
 
 random_particles = gerar_inicial(num_part_inicial);
 figure 1
@@ -65,7 +65,7 @@ while true %variancia_total > variancia_final
     P.th = NormAngle(P.th);
     particle_med = [P.x P.y P.th];
     dists = leitura{3}.distances;   
-    landmarks_validos = FeatureDetection2(dists,[-90 90 10],L,P);
+    landmarks_validos = FeatureDetection2(dists,[-90 90 5],L,P);
     if length(landmarks_validos) > 0
       disp("Land Marks validos encontrados");
       soma_quadratica_media = 0;
