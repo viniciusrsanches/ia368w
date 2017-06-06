@@ -3,7 +3,7 @@ close all; clear;
 num_part_inicial = 500;
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://192.168.0.103:4950';
+host = 'http://192.168.0.105:4950';
 laser = '/perception/laser/1/distances?range=-90:90:5';
 
 gr.name = 'group1';

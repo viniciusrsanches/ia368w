@@ -80,6 +80,6 @@ ylabel('y');
 axis equal; grid on;
 
 
-result = Features
+result = Features;
 fflush(stdout);
 end
