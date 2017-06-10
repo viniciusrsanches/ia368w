@@ -2,7 +2,7 @@ close all; clear;
 
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://192.168.0.105:4950';
+host = 'http://192.168.0.103:4950';
 laser = '/perception/laser/1/distances?range=-90:90:1';
 
 gr1.name = 'group1';
@@ -16,8 +16,8 @@ b = 165;
 
 
 
-R_t = [100 0 0 ; 0 100 0 ; 0 0 0.005];
-Q_t = [100 0; 0 0.005];
+R_t = [25 0 0 ; 0 25 0 ; 0 0 (2*pi/180)^2];
+Q_t = [1 0; 0 (0.5*pi/180)^2];
 Omega_t = [ 10^8 0 0; 0 10^8 0 ; 0 0 10^8];
 Xi_t = [0;0;0;];
 Delta_t = 1;
@@ -36,7 +36,7 @@ while true
   x_inicial = leitura{2}.pose.x;
   y_inicial = leitura{2}.pose.y;
   th_inicial = leitura{2}.pose.th;
-  th_inicial = th_inicial*pi/180;
+  th_inicial = NormAngle(th_inicial*pi/180);
   P.x = x_inicial;
   P.y = y_inicial;
   P.th = th_inicial; 
@@ -56,7 +56,7 @@ while true
       q = de*de';
       dx = de(1);
       dy = de(2);
-      H_t = (1/q)*[-dx*sqrt(q) dy*sqrt(q) 0 ; dy -dx -q];
+      H_t = (1/q)*[-dx*sqrt(q) -dy*sqrt(q) 0 ; dy -dx -q];
       lamb = [(f(k,1)-mu_t(1,1)) (f(k,2)-mu_t(2,1))];
       r = lamb*lamb';
       rx = lamb(1);
@@ -66,7 +66,7 @@ while true
       h_t = [ sqrt(q); atan2(dy,dx) - mu_t(3,1)];
       h_t(2) = NormAngle(h_t(2));
       Omega_t = Omega_t + H_t'*inv(Q_t)*H_t;
-      Xi_t = Xi_t + H_t'*inv(Q_t)*[z_t-h_t + H_t*mu_t];
+      Xi_t = Xi_t + H_t'*inv(Q_t)*[(z_t-h_t) + (H_t*mu_t)];
       #Xi_t(3) = NormAngle(Xi_t(3));
     endfor
     #Xi_t(3) = NormAngle(Xi_t(3));
@@ -74,7 +74,7 @@ while true
     mu_t_aux(3,1) = NormAngle(mu_t_aux(3,1));
     delta_pose.x = mu_t_aux(1) - mu_t(1);
     delta_pose.y = mu_t_aux(2) - mu_t(2);
-    delta_pose.th = NormAngle(mu_t_aux(3) - mu_t(3));
+    delta_pose.th = NormAngle(mu_t_aux(3) - mu_t(3))*180/pi;
     #delta_pose
     http_post([host '/motion/pose'],delta_pose);
     #mu_t = mu_t_aux;
