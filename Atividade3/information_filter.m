@@ -88,6 +88,8 @@ while true
     delta_pose.th = NormAngle(mu_t_aux(3) - mu_t(3))*180/pi;
     http_post([host '/motion/pose'],delta_pose);
     disp("Update de pose: ") , disp(delta_pose);
+  else
+    disp("Robo perdido!!!");
   endif
   fflush(stdout);
   refresh();
