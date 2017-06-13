@@ -27,7 +27,7 @@
 function result = FeatureDetection2(dists, angles, L, Pose)
 
 % --------------------------------------
-epsRange = 75;
+epsRange = 100;
 epsBearing = 5*pi/180;
 % ---------------------------------------
 
