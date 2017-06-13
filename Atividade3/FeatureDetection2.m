@@ -27,8 +27,8 @@
 function result = FeatureDetection2(dists, angles, L, Pose)
 
 % --------------------------------------
-epsRange = 100;
-epsBearing = 5*pi/180;
+epsRange = 50;
+epsBearing = 2.5*pi/180;
 % ---------------------------------------
 
 % Passo 1 - Split and Merge
