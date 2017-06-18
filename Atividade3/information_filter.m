@@ -27,7 +27,8 @@ http_delete([host '/group/group1']);
 g1 = http_post([host '/group'],gr1);
 g1 = [host '/group/group1'];
 Delta_t = 0;
-
+P_hist = [];
+P_correct_hist=[];
 map;
 
 while true
@@ -37,6 +38,7 @@ while true
   y_inicial = leitura{2}.pose.y;
   th_inicial = leitura{2}.pose.th;
   th_inicial = NormAngle(th_inicial*pi/180);
+  P_hist = [P_hist ;leitura{2}.pose.x leitura{2}.pose.y];
   P.x = x_inicial;
   P.y = y_inicial;
   P.th = th_inicial; 
@@ -82,12 +84,19 @@ while true
       Xi_t = Xi_t + H_t'*inv(Q_t)*[(z_t-h_t) + (H_t*mu_t)];
     endfor
     mu_t_aux = inv(Omega_t) * Xi_t;
+    P_correct_hist =[ P_correct_hist ; mu_t_aux(1) mu_t_aux(2)];
     mu_t_aux(3,1) = NormAngle(mu_t_aux(3,1));
     delta_pose.x = mu_t_aux(1) - mu_t(1);
     delta_pose.y = mu_t_aux(2) - mu_t(2);
     delta_pose.th = NormAngle(mu_t_aux(3) - mu_t(3))*180/pi;
     http_post([host '/motion/pose'],delta_pose);
     disp("Update de pose: ") , disp(delta_pose);
+    figure(2);
+    hold on
+    plot(P_hist(:,1) , P_hist(:,2) , 'ob' , 'linewidth' , 1 , 'markersize' , 3,'color', 'g');
+    hold on
+    plot(P_correct_hist(:,1) , P_correct_hist(:,2), 'ob' , 'linewidth' , 1 , 'markersize' , 3,'color','r');
+    hold off
   else
     disp("Robo perdido!!!");
   endif
