@@ -2,7 +2,7 @@ close all; clear;
 
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://192.168.0.102:4950';
+host = 'http://192.168.0.105:4950';
 laser = '/perception/laser/1/distances?range=-90:90:1';
 
 gr1.name = 'group1';
@@ -37,7 +37,7 @@ P_hist = [];
 P_correct_hist=[];
 map;
 
-http_put([host '/motion/pose'],P);
+#http_put([host '/motion/pose'],P);
 while true
   tic();
   leitura = http_get(g1);
