@@ -43,7 +43,7 @@ Xt(1) = Pose_R(1);
 Xt(2) = Pose_R(2);
 Xt(3) = Pose_R(3);
 while true
-  tic();
+
   Delta_S = ((leitura{4}.vel2.right+leitura{4}.vel2.left)*(Delta_t))/2;
   Delta_th = ((leitura{4}.vel2.right-leitura{4}.vel2.left)*(Delta_t))/2*b;
   G_t = [ 1 0 -1*Delta_S*sin(Pose_R(3)+(Delta_th/2)) ; 0 1 Delta_S*cos(Pose_R(3)+(Delta_th/2)); 0 0 1];   
@@ -92,9 +92,9 @@ while true
       Fxi(1,1) = 1; Fxi(2,2) = 1; Fxi(3,3) = 1;
       Fxi(4,len+1) = 1; Fxi(5,len+2) = 1;
     endif
-    d = [abs(Map_aux(1)-Xt(1)); abs(Map_aux(2)-Xt(2))];
+    d = [Map_aux(1)-Xt(1); Map_aux(2)-Xt(2)];
     q = d'*d;
-    Ht = (1/q)*[-1*sqrt(q*d(1)) -1*sqrt(q*d(2)) 0 sqrt(q*d(1)) sqrt(q*d(2)); d(2) -1*d(1) -1*q -1*d(2) d(1)]*Fxi;
+    Ht = (1/q)*[-1*sqrt(q)*d(1) -1*sqrt(q)*d(2) 0 sqrt(q)*d(1) sqrt(q)*d(2); d(2) -1*d(1) -1*q -1*d(2) d(1)]*Fxi;
     Kt = Sigma*Ht'*inv((Ht*Sigma*Ht')+Q_t);
     Zt = [sqrt(q); atan2(d(2),d(1))-Xt(3)];
     Zit = [f(k,1);f(k,2)];
@@ -111,7 +111,4 @@ while true
   dp
   http_post([host '/motion/pose'],dp);
   fflush(stdout);
-  #refresh();
-  #gap = toc();
-  #pause(abs(Delta_t-gap));
 endwhile
