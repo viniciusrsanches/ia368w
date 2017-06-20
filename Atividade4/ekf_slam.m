@@ -32,10 +32,10 @@ P.x = 2340;
 P.y = 1600;
 P.th = 0;
 
-Delta_t = 3;
+Delta_t = 1;
 Map = [];
 
-http_put([host '/motion/pose'],P);
+%http_put([host '/motion/pose'],P);
 leitura = http_get(g1);
 Pose_R = [leitura{2}.pose.x; leitura{2}.pose.y; NormAngle(leitura{2}.pose.th*pi/180)];
 Xt = [ 0 0 0 ];
@@ -61,54 +61,60 @@ while true
   Xt(2) = Pose_R(2);
   Xt(3) = Pose_R(3);
   f = FeatureDetection(leitura{3}.distances,[-90 90 1]);
-  for k=1:length(f(:,1))
-    Map_aux = [(Pose_R(1)) ; (Pose_R(2))] + [(f(k,1)*cos(f(k,2)+Pose_R(3))) ; (f(k,1)*sin(f(k,2)+Pose_R(3)))];
-    found = false;
-    if length(Xt) > 3
-      for j=1:2:length(Map(:,1))
-        if sqrt((Map(j,1)-Map_aux(1))^2+((Map(j,2)-Map_aux(2))^2)) <= 200 # Euclidian distance test
-          found = true;
-          Map(j,1) = Map_aux(1);
-          Map(j,2) = Map_aux(2);
-          Xt(3+j) = Map_aux(1);
-          Xt(3+j+1) = Map_aux(2);
-          Fxi = zeros(5,length(Xt));
-          Fxi(1,1) = 1; Fxi(2,2) = 1; Fxi(3,3) = 1;
-          Fxi(4,3+j) = 1; Fxi(5,3+j+1) = 1;
+  if length(f(:,1)) > 0
+    for k=1:length(f(:,1))
+      Map_aux = [(Pose_R(1)) ; (Pose_R(2))] + [(f(k,1)*cos(f(k,2)+Pose_R(3))) ; (f(k,1)*sin(f(k,2)+Pose_R(3)))];
+      found = false;
+      if length(Xt) > 3
+        for j=1:2:length(Map(:,1))
+          if sqrt((Map(j,1)-Map_aux(1))^2+((Map(j,2)-Map_aux(2))^2)) <= 200 # Euclidian distance test
+            found = true;
+            Map(j,1) = Map_aux(1);
+            Map(j,2) = Map_aux(2);
+            Xt(3+j) = Map_aux(1);
+            Xt(3+j+1) = Map_aux(2);
+            Fxi = zeros(5,length(Xt));
+            Fxi(1,1) = 1; Fxi(2,2) = 1; Fxi(3,3) = 1;
+            Fxi(4,3+j) = 1; Fxi(5,3+j+1) = 1;
 
-        endif
-      endfor
+          endif
+        endfor
+      endif
+      if found == false
+        Map = [Map; Map_aux'];
+        len = length(Xt);
+        Xt = resize(Xt, len+2);
+        Xt(len+1) = Map_aux(1);
+        Xt(len+2) = Map_aux(2);
+        Sigma = resize(Sigma, len+2);
+        Sigma(len+1,len+1) = Q_t(1,1);
+        Sigma(len+2,len+2) = Q_t(1,1);
+        Fxi = zeros(5,length(Xt));
+        Fxi(1,1) = 1; Fxi(2,2) = 1; Fxi(3,3) = 1;
+        Fxi(4,len+1) = 1; Fxi(5,len+2) = 1;
+      endif
+      d = [Map_aux(1)-Xt(1); Map_aux(2)-Xt(2)];
+      q = d'*d;
+      Ht = (1/q)*[-1*sqrt(q)*d(1) -1*sqrt(q)*d(2) 0 sqrt(q)*d(1) sqrt(q)*d(2); d(2) -1*d(1) -1*q -1*d(2) d(1)]*Fxi;
+      Kt = Sigma*Ht'*inv((Ht*Sigma*Ht')+Q_t);
+      Zt = [sqrt(q); atan2(d(2),d(1))-Xt(3)];
+      Zit = [f(k,1);f(k,2)];
+      INOVA = Zit - Zt;
+      Xt = Xt + Kt*INOVA;
+      Sigma = (eye(length(Xt)) - (Kt*Ht))*Sigma;
+    endfor
+    # Pose Update
+    Pose_K = [Xt(1);Xt(2);Xt(3)];
+    Pose_K
+    Pose_R
+    DeltaP = Pose_K - Pose_R;
+    dp.x = DeltaP(1);
+    dp.y = DeltaP(2);
+    dp.th = DeltaP(3)*180/pi;
+    dp
+    if (sqrt(dp.x^2 + dp.y^2) <= 200)
+      http_post([host '/motion/pose'],dp);
     endif
-    if found == false
-      Map = [Map; Map_aux'];
-      len = length(Xt);
-      Xt = resize(Xt, len+2);
-      Xt(len+1) = Map_aux(1);
-      Xt(len+2) = Map_aux(2);
-      Sigma = resize(Sigma, len+2);
-      Sigma(len+1,len+1) = Q_t(1,1);
-      Sigma(len+2,len+2) = Q_t(1,1);
-      Fxi = zeros(5,length(Xt));
-      Fxi(1,1) = 1; Fxi(2,2) = 1; Fxi(3,3) = 1;
-      Fxi(4,len+1) = 1; Fxi(5,len+2) = 1;
-    endif
-    d = [Map_aux(1)-Xt(1); Map_aux(2)-Xt(2)];
-    q = d'*d;
-    Ht = (1/q)*[-1*sqrt(q)*d(1) -1*sqrt(q)*d(2) 0 sqrt(q)*d(1) sqrt(q)*d(2); d(2) -1*d(1) -1*q -1*d(2) d(1)]*Fxi;
-    Kt = Sigma*Ht'*inv((Ht*Sigma*Ht')+Q_t);
-    Zt = [sqrt(q); atan2(d(2),d(1))-Xt(3)];
-    Zit = [f(k,1);f(k,2)];
-    INOVA = Zit - Zt;
-    Xt = Xt + Kt*INOVA;
-    Sigma = (eye(length(Xt)) - (Kt*Ht))*Sigma;
-  endfor
-  # Pose Update
-  Pose_K = [Xt(1);Xt(2);Xt(3)];
-  DeltaP = Pose_K - Pose_R;
-  dp.x = DeltaP(1);
-  dp.y = DeltaP(2);
-  dp.th = NormAngle(DeltaP(3)*180/pi);
-  dp
-  http_post([host '/motion/pose'],dp);
-  fflush(stdout);
+    fflush(stdout);
+   endif
 endwhile
