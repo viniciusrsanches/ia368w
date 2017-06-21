@@ -27,7 +27,7 @@ http_delete([host '/group/group1']);
 g1 = http_post([host '/group'],gr1);
 g1 = [host '/group/group1'];
 
-Delta_t = 1;
+Delta_t = 3;
 P.x = 2340;
 P.y = 1600;
 P.th = 0;
