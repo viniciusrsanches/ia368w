@@ -14,7 +14,8 @@ gr1.resources{4} = '/motion/vel2';
 
 b = 165;
 
-
+P_hist = [];
+P_hist_read = [];
 
 R_t = [25 0 0 ; 0 25 0 ; 0 0 (0.5*pi/180)^2];
 Q_t = [1 0; 0 (0.5*pi/180)^2];
@@ -32,8 +33,8 @@ P.x = 2340;
 P.y = 1600;
 P.th = 0;
 
-Delta_t = 0.2;
-
+Delta_t = 0.5;
+map;
 
 %http_put([host '/motion/pose'],P);
 leitura = http_get(g1);
@@ -65,13 +66,13 @@ while true
   Xt(2) = Pose_R(2);
   Xt(3) = Pose_R(3);
   f = FeatureDetection(leitura{3}.distances,[-90 90 1]);
-  if length(f(:,1)) > 0
+  if length(f(:,1)) > 0 
     for k=1:length(f(:,1))
       Map_aux = [(Pose_R(1)) ; (Pose_R(2))] + [(f(k,1)*cos(f(k,2)+Pose_R(3))) ; (f(k,1)*sin(f(k,2)+Pose_R(3)))];
       found = false;
       if length(Xt) > 3
         for j=4:2:length(Xt)
-          if sqrt((Xt(j)-Map_aux(1))^2+((Xt(j+1)-Map_aux(2))^2)) <= 350 # Euclidian distance test
+          if sqrt((Xt(j)-Map_aux(1))^2+((Xt(j+1)-Map_aux(2))^2)) <= 250 # Euclidian distance test
             %Mesma feature encontrada
             found = true;
             %Montando a Matriz Fxi
@@ -86,6 +87,7 @@ while true
       endif
       if found == false
         %Adicionando uma nova feature
+        if Delta_th == 0
         len = length(Xt);
         Xt(len+1) = Map_aux(1);
         Xt(len+2) = Map_aux(2);
@@ -94,6 +96,7 @@ while true
         Sigma = resize(Sigma, len+2);
         Sigma(len+1,len+1) = Q_t(1,1);
         Sigma(len+2,len+2) = Q_t(1,1);        
+        endif
       else 
         % Atualizando o vetor de estados e o Sigma
         d = [xi-Xt(1); yi-Xt(2)];
@@ -112,6 +115,7 @@ while true
     endfor
     # Pose Update
     Pose_K = [Xt(1);Xt(2);Xt(3)];
+    
     Pose_K
     Pose_R
     DeltaP = Pose_K - Pose_R;
@@ -120,7 +124,26 @@ while true
     dp.th = NormAngle(DeltaP(3));
     dp.th = dp.th*180/pi;
     dp
-    http_post([host '/motion/pose'],dp);
+    if Delta_th == 0 && abs(dp.th) < 5 && abs(dp.x) < 25 && abs(dp.y) < 25
+      disp('Atualizando');
+      http_post([host '/motion/pose'],dp);
+    endif
+    P_hist = [P_hist; Xt(1) Xt(2)];
+    P_hist_read = [P_hist_read; Pose_R(1) Pose_R(2)];
+    P_feat_hist = [];
+    for i=4:2:length(Xt)
+      P_feat_hist = [P_feat_hist; Xt(i) Xt(i+1)];
+    endfor
+    figure(1);
+    plot(L.x(:) , L.y(:) , 'ob' , 'linewidth' , 1 , 'markersize' , 10,'color', 'b');
+    hold on
+    plot(P_hist(:,1) , P_hist(:,2) , 'ob' , 'linewidth' , 2 , 'markersize' , 5,'color', 'g');
+    hold on
+    plot(P_hist_read(:,1) , P_hist_read(:,2) , 'ob' , 'linewidth' , 2 , 'markersize' , 5,'color', 'r');
+    hold on
+    plot(P_feat_hist(:,1) , P_feat_hist(:,2), 'xb' , 'linewidth' , 1 , 'markersize' , 10,'color','r');
+    hold off
+    refresh();
     fflush(stdout);
    endif
 endwhile
