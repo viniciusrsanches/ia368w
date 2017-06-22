@@ -32,7 +32,7 @@ P.x = 2340;
 P.y = 1600;
 P.th = 0;
 
-Delta_t = 0;
+Delta_t = 0.2;
 
 
 %http_put([host '/motion/pose'],P);
@@ -55,8 +55,9 @@ while true
   V_t = [V1 V2; V3 V4; (1/2*b) (-1/2*b)];
   Sigma_dt = [Ks*abs(leitura{4}.vel2.right*Delta_t) 0; 0 Ks*abs(leitura{4}.vel2.left*Delta_t)];
   Sigma(1:3,1:3) = (G_t* Sigma(1:3,1:3)*G_t') + (V_t* Sigma_dt *V_t') + R_t;
-  Delta_t = toc();
-  %sleep(abs(Delta_t-gap));
+  %Delta_t = toc();
+  gap = toc();
+  sleep(abs(Delta_t-gap));
   tic();
   leitura = http_get(g1);
   Pose_R = [leitura{2}.pose.x; leitura{2}.pose.y; NormAngle(leitura{2}.pose.th*pi/180)];
