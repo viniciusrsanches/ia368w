@@ -28,22 +28,21 @@ g1 = http_post([host '/group'],gr1);
 g1 = [host '/group/group1'];
 
 
-Delta_t = 1.5;
-
 P.x = 2340;
 P.y = 1600;
 P.th = 0;
 
-Delta_t = 1;
+Delta_t = 0;
 
 
-http_put([host '/motion/pose'],P);
+%http_put([host '/motion/pose'],P);
 leitura = http_get(g1);
 Pose_R = [leitura{2}.pose.x; leitura{2}.pose.y; NormAngle(leitura{2}.pose.th*pi/180)];
 Xt = [ 0; 0; 0 ];
 Xt(1) = Pose_R(1);
 Xt(2) = Pose_R(2);
 Xt(3) = Pose_R(3);
+tic();
 while true
   leitura = http_get(g1);
   Delta_S = ((leitura{4}.vel2.right+leitura{4}.vel2.left)*(Delta_t))/2;
@@ -56,7 +55,9 @@ while true
   V_t = [V1 V2; V3 V4; (1/2*b) (-1/2*b)];
   Sigma_dt = [Ks*abs(leitura{4}.vel2.right*Delta_t) 0; 0 Ks*abs(leitura{4}.vel2.left*Delta_t)];
   Sigma(1:3,1:3) = (G_t* Sigma(1:3,1:3)*G_t') + (V_t* Sigma_dt *V_t') + R_t;
-  pause(Delta_t);
+  Delta_t = toc();
+  %sleep(abs(Delta_t-gap));
+  tic();
   leitura = http_get(g1);
   Pose_R = [leitura{2}.pose.x; leitura{2}.pose.y; NormAngle(leitura{2}.pose.th*pi/180)];
   Xt(1) = Pose_R(1);
@@ -69,29 +70,31 @@ while true
       found = false;
       if length(Xt) > 3
         for j=4:2:length(Xt)
-          if sqrt((Xt(j)-Map_aux(1))^2+((Xt(j+1)-Map_aux(2))^2)) <= 200 # Euclidian distance test
+          if sqrt((Xt(j)-Map_aux(1))^2+((Xt(j+1)-Map_aux(2))^2)) <= 350 # Euclidian distance test
+            %Mesma feature encontrada
             found = true;
+            %Montando a Matriz Fxi
             Fxi = zeros(5,length(Xt));
             Fxi(1,1) = 1; Fxi(2,2) = 1; Fxi(3,3) = 1;
             Fxi(4,j) = 1; Fxi(5,j+1) = 1;
+            %verificando qual o indice
             xi = Xt(j);
             yi = Xt(j+1);
           endif
         endfor
       endif
       if found == false
-        %Map = [Map; Map_aux'];
+        %Adicionando uma nova feature
         len = length(Xt);
-        %Xt = resize(Xt, len+2);
         Xt(len+1) = Map_aux(1);
         Xt(len+2) = Map_aux(2);
         xi = Xt(len+1);
         yi = Xt(len+2);
         Sigma = resize(Sigma, len+2);
         Sigma(len+1,len+1) = Q_t(1,1);
-        Sigma(len+2,len+2) = Q_t(1,1);
-        
+        Sigma(len+2,len+2) = Q_t(1,1);        
       else 
+        % Atualizando o vetor de estados e o Sigma
         d = [xi-Xt(1); yi-Xt(2)];
         q = d'*d;
         Ht = [];
