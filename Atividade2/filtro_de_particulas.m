@@ -3,7 +3,7 @@ close all; clear;
 num_part_inicial = 500;
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://192.168.0.105:4950';
+host = 'http://192.168.0.103:4950';
 laser = '/perception/laser/1/distances?range=-90:90:10';
 
 gr.name = 'group1';
@@ -23,9 +23,9 @@ variancia_final = 50;
 
 
 http_init('');
-http_delete('http://192.168.0.105:4950/group/group1');
-g1 = http_post('http://192.168.0.105:4950/group',gr);
-g1 = 'http://192.168.0.105:4950/group/group1';
+http_delete([host '/group/group1']);
+g1 = http_post([host '/group'],gr);
+g1 = [host '/group/group1'];
 
 random_particles = gerar_inicial(num_part_inicial);
 figure 1

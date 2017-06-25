@@ -1,7 +1,7 @@
 function mapping()
   
   addpath('~/Desktop/APIs/Matlab');
-  host = 'http://192.168.0.105:4950';
+  host = 'http://192.168.0.103:4950';
   laser = '/perception/laser/1/distances?range=-90:90:10';
   
   gr.name = 'group1';
@@ -30,9 +30,9 @@ function mapping()
   [xx, yy] = meshgrid(x, y);
   max = 0;
   http_init('');
-  http_delete('http://192.168.0.105:4950/group/group1')
-  g1 = http_post('http://192.168.0.105:4950/group',gr)
-  
+  http_delete([host '/group/group1'])
+  g1 = http_post([host '/group'],gr)
+  g1 = [host '/group/group1'];
   % mapa
   mapa = zeros(numCelX, numCelY);
 
@@ -58,7 +58,7 @@ function mapping()
     %g1 = http_post('http://127.0.0.1:4950/group', gr)
     ranges_lidas = [];
     %thl = [];
-    leitura = http_get('http://192.168.0.105:4950/group/group1');
+    leitura = http_get(g1);
     pose = leitura{2}.pose;
     %pose = http_get([host '/motion/pose']);
     %ranges_lidas = [ranges_lidas http_get([host laser])];
@@ -80,42 +80,41 @@ function mapping()
          % angulo em relacao ao robo
          b = atan2((yj-py), (xi-px)) - pth;
          % diferença em relacao a leitura do sensor
-	 
          for k=1:length(ranges_lidas)
-		   range = ranges_lidas(k);
-		   fi = thl(k);
-		   mu = [range fi];
-		   delta = [r b] - mu;
-		   P = Pmin;
-		   if abs(delta(2)) <= 2*passo		
-	   %  if abs(delta(2)) < 2*passo && abs(delta(1)) < 2*precisao
-			 if r < mu(1)
-				P = Pmin;
-			 else
-        if z(i,j) == 0
-				  P = 0.5;
-        end
-			 end
-		 %     end
-			 delta(1) = delta(1)/1000;   % distancia em metros
-			 calculo = P + (K/(2*pi*sigma(1,1)*sigma(2,2)) + 0.5-P)*exp(-0.5*delta*invSigma*delta') ;
-			 if calculo >= z(i,j) && (calculo < 1.0)      
-			   z(i,j) = calculo; %P + (K/(2*pi*sigma(1,1)*sigma(2,2)) + 0.5-P)*exp(-0.5*delta*invSigma*delta');           
-			   mapa(i,j) = mapa(i,j) + log(z(i,j)/(1-z(i,j)));
-			 end
+           range = ranges_lidas(k);
+           fi = thl(k);
+           mu = [range fi];
+           delta = [r b] - mu;
+           P = Pmin;
+           if abs(delta(2)) <= 2*passo		
+         %  if abs(delta(2)) < 2*passo && abs(delta(1)) < 2*precisao
+           if r < mu(1)
+            P = Pmin;
+           else
+            if z(i,j) == 0
+              P = 0.5;
+            end
+           end
+         %     end
+           delta(1) = delta(1)/1000;   % distancia em metros
+           calculo = P + (K/(2*pi*sigma(1,1)*sigma(2,2)) + 0.5-P)*exp(-0.5*delta*invSigma*delta') ;
+           if calculo >= z(i,j) && (calculo < 1.0)      
+             z(i,j) = calculo; %P + (K/(2*pi*sigma(1,1)*sigma(2,2)) + 0.5-P)*exp(-0.5*delta*invSigma*delta');           
+             mapa(i,j) = mapa(i,j) + log(z(i,j)/(1-z(i,j)));
+           end
 
-		   end
-           
-         endfor
-      if z(i,j) == 0 
-		   keep_going = true;
-		  end
-	    if (i-1 >= 1 && i+1 <= numCelX && j-1 >= 1 && j+1 <= numCelY) && z(i,j) == 0.2 && (z(i,j+1) == 0.5 || z(i,j-1) == 0.5 || z(i+1,j) == 0.5 || z(i-1,j) == 0.5 || z(i+1,j+1) == 0.5 || z(i-1,j-1) == 0.5 || z(i-1, j+1) == 0.5 || z(i+1,j-1) == 0.5)
-		   keep_going = true;
-	    end
-        if z(i,j) > max
-            max = z(i,j);
-        end
+           end
+               
+             endfor
+          if z(i,j) == 0 
+           keep_going = true;
+          end
+          if (i-1 >= 1 && i+1 <= numCelX && j-1 >= 1 && j+1 <= numCelY) && z(i,j) == 0.2 && (z(i,j+1) == 0.5 || z(i,j-1) == 0.5 || z(i+1,j) == 0.5 || z(i-1,j) == 0.5 || z(i+1,j+1) == 0.5 || z(i-1,j-1) == 0.5 || z(i-1, j+1) == 0.5 || z(i+1,j-1) == 0.5)
+           keep_going = true;
+          end
+            if z(i,j) > max
+                max = z(i,j);
+            end
 
        end
 

@@ -2,7 +2,7 @@ close all; clear;
 
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://192.168.0.105:4950';
+host = 'http://192.168.43.211:4950';
 laser = '/perception/laser/1/distances?range=-90:90:1';
 
 gr1.name = 'group1';
@@ -74,6 +74,9 @@ while true
         for j=4:2:length(Xt)
           if sqrt((Xt(j)-Map_aux(1))^2+((Xt(j+1)-Map_aux(2))^2)) <= 250 # Euclidian distance test
             %Mesma feature encontrada
+            if (j == 4)
+              [Map_aux(1) Map_aux(2)]
+            endif
             found = true;
             %Montando a Matriz Fxi
             Fxi = zeros(5,length(Xt));
@@ -110,6 +113,8 @@ while true
         INOVA(2) = NormAngle(INOVA(2));
         Xt = Xt + Kt*INOVA;
         Xt(3) = NormAngle(Xt(3));
+[Xt(4) Xt(5)]
+fflush(stdout);
         Sigma = (eye(length(Xt)) - (Kt*Ht))*Sigma;
       endif
     endfor
@@ -142,8 +147,8 @@ while true
     plot(P_hist_read(:,1) , P_hist_read(:,2) , 'ob' , 'linewidth' , 2 , 'markersize' , 5,'color', 'r');
     hold on
     plot(P_feat_hist(:,1) , P_feat_hist(:,2), 'xb' , 'linewidth' , 1 , 'markersize' , 10,'color','r');
-    hold off
-    refresh();
+    %hold off
+    %refresh();
     fflush(stdout);
    endif
 endwhile
