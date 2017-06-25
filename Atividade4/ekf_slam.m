@@ -2,7 +2,7 @@ close all; clear;
 
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://192.168.43.211:4950';
+host = 'http://192.168.0.103:4950';
 laser = '/perception/laser/1/distances?range=-90:90:1';
 
 gr1.name = 'group1';
@@ -16,7 +16,7 @@ b = 165;
 
 P_hist = [];
 P_hist_read = [];
-
+P_feat_hist = [];
 R_t = [25 0 0 ; 0 25 0 ; 0 0 (0.5*pi/180)^2];
 Q_t = [1 0; 0 (0.5*pi/180)^2];
 Sigma = [ 0 0 0; 0 0 0; 0 0 0];
@@ -74,9 +74,6 @@ while true
         for j=4:2:length(Xt)
           if sqrt((Xt(j)-Map_aux(1))^2+((Xt(j+1)-Map_aux(2))^2)) <= 250 # Euclidian distance test
             %Mesma feature encontrada
-            if (j == 4)
-              [Map_aux(1) Map_aux(2)]
-            endif
             found = true;
             %Montando a Matriz Fxi
             Fxi = zeros(5,length(Xt));
@@ -113,14 +110,15 @@ while true
         INOVA(2) = NormAngle(INOVA(2));
         Xt = Xt + Kt*INOVA;
         Xt(3) = NormAngle(Xt(3));
-[Xt(4) Xt(5)]
-fflush(stdout);
+        for i=4:2:length(Xt)
+          P_feat_hist = [P_feat_hist; Xt(i) Xt(i+1)];
+        endfor
+        fflush(stdout);
         Sigma = (eye(length(Xt)) - (Kt*Ht))*Sigma;
       endif
     endfor
     # Pose Update
     Pose_K = [Xt(1);Xt(2);Xt(3)];
-    
     Pose_K
     Pose_R
     DeltaP = Pose_K - Pose_R;
@@ -135,10 +133,6 @@ fflush(stdout);
     endif
     P_hist = [P_hist; Xt(1) Xt(2)];
     P_hist_read = [P_hist_read; Pose_R(1) Pose_R(2)];
-    P_feat_hist = [];
-    for i=4:2:length(Xt)
-      P_feat_hist = [P_feat_hist; Xt(i) Xt(i+1)];
-    endfor
     figure(1);
     plot(L.x(:) , L.y(:) , 'ob' , 'linewidth' , 1 , 'markersize' , 10,'color', 'b');
     hold on
@@ -146,9 +140,11 @@ fflush(stdout);
     hold on
     plot(P_hist_read(:,1) , P_hist_read(:,2) , 'ob' , 'linewidth' , 2 , 'markersize' , 5,'color', 'r');
     hold on
-    plot(P_feat_hist(:,1) , P_feat_hist(:,2), 'xb' , 'linewidth' , 1 , 'markersize' , 10,'color','r');
-    %hold off
-    %refresh();
+    if length(P_feat_hist) > 0
+      plot(P_feat_hist(:,1) , P_feat_hist(:,2), 'xb' , 'linewidth' , 1 , 'markersize' , 10,'color','r');
+    end
+    hold off
+    refresh();
     fflush(stdout);
    endif
 endwhile
