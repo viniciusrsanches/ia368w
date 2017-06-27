@@ -1,13 +1,13 @@
 function mapping()
   
   addpath('~/Desktop/APIs/Matlab');
-  host = 'http://192.168.0.103:4950';
-  laser = '/perception/laser/1/distances?range=-90:90:10';
+  host = 'http://10.1.3.130:4950';
+  laser = '/perception/laser/0/distances?range=-90:90:10';
   
   gr.name = 'group1';
   gr.resources{1} = '/motion/vel';
   gr.resources{2} = '/motion/pose';
-  gr.resources{3} = '/perception/laser/1/distances?range=-90:90:10';
+  gr.resources{3} = '/perception/laser/0/distances?range=-90:90:10';
   % dados do laser
   precisao = 50;  % mm
   passo = 1*pi/180;   % rad
@@ -33,6 +33,11 @@ function mapping()
   http_delete([host '/group/group1'])
   g1 = http_post([host '/group'],gr)
   g1 = [host '/group/group1'];
+  p1.x = 2340;
+  p1.y = 1600;
+  p1.th = 0;
+  http_put([host '/motion/pose'],p1);
+  
   % mapa
   mapa = zeros(numCelX, numCelY);
 

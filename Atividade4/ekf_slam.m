@@ -2,13 +2,13 @@ close all; clear;
 
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://192.168.0.103:4950';
-laser = '/perception/laser/1/distances?range=-90:90:1';
+host = 'http://10.1.3.130:4950';
+laser = '/perception/laser/0/distances?range=-90:90:1';
 
 gr1.name = 'group1';
 gr1.resources{1} = '/motion/vel';
 gr1.resources{2} = '/motion/pose';
-gr1.resources{3} = '/perception/laser/1/distances?range=-90:90:1';
+gr1.resources{3} = '/perception/laser/0/distances?range=-90:90:1';
 gr1.resources{4} = '/motion/vel2';
 
 
@@ -36,7 +36,7 @@ P.th = 0;
 Delta_t = 0.5;
 map;
 
-%http_put([host '/motion/pose'],P);
+http_put([host '/motion/pose'],P);
 leitura = http_get(g1);
 Pose_R = [leitura{2}.pose.x; leitura{2}.pose.y; NormAngle(leitura{2}.pose.th*pi/180)];
 Xt = [ 0; 0; 0 ];
