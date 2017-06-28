@@ -1,0 +1,41 @@
+Features:
+  4.0191e+003  -8.5514e+000  4.0300e+003  0.0000e+000  1.0035e-002
+  4.6667e+003  6.9633e+002  4.6800e+003  6.5000e+002  2.7346e-002
+  4.6842e+003  2.3132e+003  4.6800e+003  2.3650e+003  2.4076e-002
+  4.2024e+003  2.3497e+003  4.1900e+003  2.3650e+003  1.3319e-002
+  4.2038e+003  3.1943e+003  4.1900e+003  3.2000e+003  6.8948e-003
+Land Marks validos encontrados
+ Soma quadratica media dos erros dos Land Marks:
+ 1165.5
+ Media dos erros dos Land Marks:
+ 29.720
+  Variancia dos erros dos Land Marks:
+ 352.85
+Update de pose:
+
+  scalar structure containing the fields:
+
+    x =  24.154
+    y =  1.0512
+    th =  0.40998
+Features:
+  4.7063e+003  7.1257e+002  4.6800e+003  6.5000e+002  5.2271e-002
+  4.7102e+003  2.3521e+003  4.6800e+003  2.3650e+003  1.8602e-002
+  4.2200e+003  2.3627e+003  4.1900e+003  2.3650e+003  2.0332e-002
+  4.2289e+003  3.2003e+003  4.1900e+003  3.2000e+003  1.7585e-002
+Land Marks validos encontrados
+ Soma quadratica media dos erros dos Land Marks:
+ 2026.3
+ Media dos erros dos Land Marks:
+ 42.428
+  Variancia dos erros dos Land Marks:
+ 301.43
+Update de pose:
+
+  scalar structure containing the fields:
+
+    x = -4.2172
+    y = -13.182
+    th =  0.30011
+
+>>
