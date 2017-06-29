@@ -3,13 +3,13 @@ close all; clear;
 num_part_inicial = 500;
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://10.1.3.130:4950';
-laser = '/perception/laser/0/distances?range=-90:90:10';
+host = 'http://192.168.0.105:4950';
+laser = '/perception/laser/1/distances?range=-90:90:10';
 
 gr.name = 'group1';
 gr.resources{1} = '/motion/vel';
 gr.resources{2} = '/motion/pose';
-gr.resources{3} = '/perception/laser/0/distances?range=-90:90:10';
+gr.resources{3} = '/perception/laser/1/distances?range=-90:90:10';
 % dados do laser
 precisao = 50;  % mm
 passo = 1*pi/180;   % rad
@@ -26,10 +26,10 @@ http_init('');
 http_delete([host '/group/group1']);
 g1 = http_post([host '/group'],gr);
 g1 = [host '/group/group1'];
-  p1.x = 2340;
-  p1.y = 1600;
-  p1.th = 0;
-  http_put([host '/motion/pose'],p1);
+p1.x = 2340;
+p1.y = 1600;
+p1.th = 0;
+http_put([host '/motion/pose'],p1);
 
 random_particles = gerar_inicial(num_part_inicial);
 figure 1
@@ -72,18 +72,18 @@ while true %variancia_total > variancia_final
     landmarks_validos = FeatureDetection2(dists,[-90 90 10],L,P);
     if length(landmarks_validos) > 0
       disp("Land Marks validos encontrados");
-      soma_quadratica_media = 0;
+      %soma_quadratica_media = 0;
       media_dos_erros = 0;
       variancia_dos_erros = [];
       for i=1:length(landmarks_validos(:,1))
-        soma_quadratica_media += (landmarks_validos(i,1) - landmarks_validos(i,3))^2 + (landmarks_validos(i,2) - landmarks_validos(i,4))^2;
+        %soma_quadratica_media += (landmarks_validos(i,1) - landmarks_validos(i,3))^2 + (landmarks_validos(i,2) - landmarks_validos(i,4))^2;
         media_dos_erros += sqrt((landmarks_validos(i,1) - landmarks_validos(i,3))^2 + (landmarks_validos(i,2) - landmarks_validos(i,4))^2);
         variancia_dos_erros = [variancia_dos_erros sqrt((landmarks_validos(i,1) - landmarks_validos(i,3))^2 + (landmarks_validos(i,2) - landmarks_validos(i,4))^2) ];
       endfor
-      soma_quadratica_media /= length(landmarks_validos(:,1));
+      %soma_quadratica_media /= length(landmarks_validos(:,1));
       media_dos_erros /= length(landmarks_validos(:,1));
       
-      disp(" Soma quadratica media dos erros dos Land Marks: ") , disp(soma_quadratica_media);
+      %disp(" Soma quadratica media dos erros dos Land Marks: ") , disp(soma_quadratica_media);
       disp(" Media dos erros dos Land Marks: ") , disp(media_dos_erros);
       disp("  Variancia dos erros dos Land Marks: ") , disp(var(variancia_dos_erros));
     else
