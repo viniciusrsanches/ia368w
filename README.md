@@ -1,2 +1,2 @@
 # ia368w
-root folder for ia368w
+Activities directory related to IA368W class.
