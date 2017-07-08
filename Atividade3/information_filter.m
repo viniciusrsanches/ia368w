@@ -60,17 +60,17 @@ while true
     disp("Features: ") , disp(f);
     landmarks_validos = f;
     disp("Land Marks validos encontrados");
-    soma_quadratica_media = 0;
+    %soma_quadratica_media = 0;
     media_dos_erros = 0;
     variancia_dos_erros = [];
     for i=1:length(landmarks_validos(:,1))
-      soma_quadratica_media += (landmarks_validos(i,1) - landmarks_validos(i,3))^2 + (landmarks_validos(i,2) - landmarks_validos(i,4))^2;
+      %soma_quadratica_media += sqrt(landmarks_validos(i,1) - landmarks_validos(i,3))^2 + (landmarks_validos(i,2) - landmarks_validos(i,4))^2;
       media_dos_erros += sqrt((landmarks_validos(i,1) - landmarks_validos(i,3))^2 + (landmarks_validos(i,2) - landmarks_validos(i,4))^2);
       variancia_dos_erros = [variancia_dos_erros sqrt((landmarks_validos(i,1) - landmarks_validos(i,3))^2 + (landmarks_validos(i,2) - landmarks_validos(i,4))^2) ];
     endfor
-    soma_quadratica_media /= length(landmarks_validos(:,1));
+    %soma_quadratica_media /= length(landmarks_validos(:,1));
     media_dos_erros /= length(landmarks_validos(:,1));
-    disp(" Soma quadratica media dos erros dos Land Marks: ") , disp(soma_quadratica_media);
+    %disp(" Soma quadratica media dos erros dos Land Marks: ") , disp(soma_quadratica_media);
     disp(" Media dos erros dos Land Marks: ") , disp(media_dos_erros);
     disp("  Variancia dos erros dos Land Marks: ") , disp(var(variancia_dos_erros));
     for k=1:length(f(:,1))

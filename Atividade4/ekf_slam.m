@@ -2,13 +2,13 @@ close all; clear;
 
 
 addpath('~/Desktop/APIs/Matlab');
-host = 'http://10.1.3.130:4950';
-laser = '/perception/laser/0/distances?range=-90:90:1';
+host = 'http://192.168.0.105:4950';
+laser = '/perception/laser/1/distances?range=-90:90:1';
 
 gr1.name = 'group1';
 gr1.resources{1} = '/motion/vel';
 gr1.resources{2} = '/motion/pose';
-gr1.resources{3} = '/perception/laser/0/distances?range=-90:90:1';
+gr1.resources{3} = '/perception/laser/1/distances?range=-90:90:1';
 gr1.resources{4} = '/motion/vel2';
 
 
@@ -66,6 +66,7 @@ while true
   Xt(2) = Pose_R(2);
   Xt(3) = Pose_R(3);
   f = FeatureDetection(leitura{3}.distances,[-90 90 1]);
+  erro_quadratico_medio = 0;
   if length(f(:,1)) > 0 
     for k=1:length(f(:,1))
       Map_aux = [(Pose_R(1)) ; (Pose_R(2))] + [(f(k,1)*cos(f(k,2)+Pose_R(3))) ; (f(k,1)*sin(f(k,2)+Pose_R(3)))];
@@ -75,6 +76,7 @@ while true
           if sqrt((Xt(j)-Map_aux(1))^2+((Xt(j+1)-Map_aux(2))^2)) <= 250 # Euclidian distance test
             %Mesma feature encontrada
             found = true;
+            erro_quadratico_medio += sqrt((Xt(j)-Map_aux(1))^2+((Xt(j+1)-Map_aux(2))^2));
             %Montando a Matriz Fxi
             Fxi = zeros(5,length(Xt));
             Fxi(1,1) = 1; Fxi(2,2) = 1; Fxi(3,3) = 1;
@@ -118,6 +120,8 @@ while true
       endif
     endfor
     # Pose Update
+    erro_quadratico_medio /= length(f(:,1));
+    disp('Erro quadratico medio: '); disp(erro_quadratico_medio);
     Pose_K = [Xt(1);Xt(2);Xt(3)];
     Pose_K
     Pose_R
