@@ -127,7 +127,7 @@ while true
     dp.th = NormAngle(DeltaP(3));
     dp.th = dp.th*180/pi;
     dp
-    if Delta_th == 0 && abs(dp.th) < 5 && abs(dp.x) < 25 && abs(dp.y) < 25
+    if Delta_th == 0 && abs(dp.th) < 5 %&& abs(dp.x) < 50 && abs(dp.y) < 50
       disp('Atualizando');
       http_post([host '/motion/pose'],dp);
     endif
